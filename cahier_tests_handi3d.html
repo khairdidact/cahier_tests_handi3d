@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cahier de tests — Handi-3D · GNUT 06</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1B4A8E;--navy-light:#2A6CC4;--navy-pale:#EBF0FB;
+  --coral:#E05835;--coral-light:#F07550;--coral-pale:#FBE9E4;
+  --bg:#F4F6F9;--card:#FFFFFF;--card2:#F9FAFB;
+  --txt:#1A1A2E;--txt2:#4F5668;--txt3:#9599A8;
+  --border:#E2E5ED;--border2:#C8CDDB;
+  --ok:#2D8653;--ok-bg:#EBF5EF;--ok-bd:#A7D9BC;
+  --warn:#A0620A;--warn-bg:#FEF3E2;--warn-bd:#F0C070;
+  --err:#B03020;--err-bg:#FDEEEC;--err-bd:#F0A898;
+  --na:#777;--na-bg:#F0F1F3;--na-bd:#C8CDDB;
+  --r4:4px;--r8:8px;--r12:12px;
+}
+html,body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.6}
+a{color:var(--navy-light)}
+
+/* ── Layout ──────────────────────────────── */
+.page{max-width:880px;margin:0 auto;padding:1.5rem 1.25rem 3rem}
+
+/* ── Header ──────────────────────────────── */
+.header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.header-left{}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--navy);background:var(--navy-pale);border:1px solid #B5C9EF;border-radius:100px;padding:3px 10px;margin-bottom:.5rem}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:var(--coral)}
+h1{font-size:22px;font-weight:700;color:var(--txt);line-height:1.2}
+h1 span{color:var(--navy)}
+.subtitle{font-size:13px;color:var(--txt2);margin-top:4px}
+.header-meta{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0}
+.meta-field{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt2)}
+.meta-field label{color:var(--txt3);font-weight:500;white-space:nowrap}
+.meta-input{border:1px solid var(--border2);border-radius:var(--r4);padding:3px 8px;font-size:12px;color:var(--txt);background:var(--card);width:140px;font-family:inherit}
+.meta-input:focus{outline:none;border-color:var(--navy-light)}
+
+/* ── Tabs ──────────────────────────────── */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1.5rem;overflow-x:auto}
+.tab{background:transparent;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:.6rem 1rem;font-size:13px;cursor:pointer;white-space:nowrap;color:var(--txt2);font-family:inherit;font-weight:500;transition:color .15s}
+.tab:hover{color:var(--navy)}
+.tab.active{border-bottom-color:var(--navy);color:var(--navy)}
+
+/* ── Context card ──────────────────────── */
+.ctx{background:var(--card);border:1px solid var(--border);border-radius:var(--r12);padding:1rem 1.25rem;margin-bottom:1.25rem}
+.ctx-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin-bottom:5px}
+.ctx-txt{font-size:13px;line-height:1.6;color:var(--txt2)}
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin-top:.75rem}
+.role{font-size:12px;padding:3px 10px;border-radius:100px;font-weight:500}
+.role-a{background:var(--navy-pale);color:var(--navy);border:1px solid #B5C9EF}
+.role-t{background:var(--coral-pale);color:#8B2E12;border:1px solid #F0C0A8}
+.role-e{background:#EBF5EF;color:#1B6040;border:1px solid #A7D9BC}
+
+/* ── Progress ──────────────────────────── */
+.progress-wrap{margin-bottom:1.25rem}
+.progress-track{height:6px;background:var(--border);border-radius:100px;overflow:hidden;margin-bottom:.35rem}
+.progress-fill{height:6px;border-radius:100px;background:var(--navy);transition:width .4s}
+.progress-lbl{font-size:11px;color:var(--txt3)}
+
+/* ── Section title ─────────────────────── */
+.sec-title{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin:1.5rem 0 .75rem;display:flex;align-items:center;gap:.75rem}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── Step card ─────────────────────────── */
+.step{background:var(--card);border:1px solid var(--border);border-radius:var(--r8);padding:.85rem 1rem;margin-bottom:.5rem;transition:border-color .15s}
+.step:hover{border-color:var(--border2)}
+.step.status-ok{border-left:3px solid var(--ok)}
+.step.status-partial{border-left:3px solid #E0A020}
+.step.status-fail{border-left:3px solid var(--coral)}
+.step.status-na{border-left:3px solid var(--border2)}
+.step-row{display:flex;align-items:flex-start;gap:10px}
+.step-num{min-width:24px;height:24px;border-radius:50%;background:var(--bg);border:1px solid var(--border);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;color:var(--txt2);flex-shrink:0;margin-top:1px}
+.step-body{flex:1;min-width:0}
+.step-label{font-size:14px;font-weight:600;color:var(--txt);margin-bottom:.5rem}
+.qs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:.6rem}
+@media(max-width:580px){.qs{grid-template-columns:1fr}}
+.q-block{background:var(--bg);border:1px solid var(--border);border-radius:var(--r4);padding:5px 8px;font-size:12px;line-height:1.5;color:var(--txt2)}
+.q-who{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px}
+.q-who.a{color:var(--navy)}.q-who.t{color:#8B2E12}.q-who.e{color:#1B6040}.q-who.v{color:#555}
+.q-full{grid-column:1/-1}
+.status-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:.5rem}
+.st-lbl{font-size:11px;color:var(--txt3);margin-right:2px;flex-shrink:0}
+.st{font-size:11px;padding:3px 9px;border-radius:100px;border:1px solid var(--border2);background:transparent;cursor:pointer;font-family:inherit;color:var(--txt2);font-weight:500;transition:all .12s}
+.st:hover{background:var(--bg)}
+.st.sel-ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-bd)}
+.st.sel-partial{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-bd)}
+.st.sel-fail{background:var(--err-bg);color:var(--err);border-color:var(--err-bd)}
+.st.sel-na{background:var(--na-bg);color:var(--na);border-color:var(--na-bd)}
+.obs{width:100%;font-size:12px;border:1px solid var(--border);border-radius:var(--r4);padding:5px 8px;background:var(--card);color:var(--txt);font-family:inherit;resize:vertical;min-height:30px;line-height:1.5}
+.obs:focus{outline:none;border-color:var(--navy-light)}
+
+/* ── Branch accordion ──────────────────── */
+.branch{background:var(--card);border:1px solid var(--border);border-radius:var(--r8);margin-bottom:.5rem;overflow:hidden}
+.branch-hdr{display:flex;align-items:center;gap:10px;padding:.75rem 1rem;cursor:pointer;user-select:none}
+.branch-hdr:hover{background:var(--bg)}
+.branch-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.branch-name{font-size:13px;font-weight:600;color:var(--txt);flex:1}
+.branch-count{font-size:11px;color:var(--txt3);background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:1px 8px}
+.branch-arrow{font-size:12px;color:var(--txt3);transition:transform .2s;flex-shrink:0}
+.branch-hdr.open .branch-arrow{transform:rotate(180deg)}
+.branch-body{display:none;padding:.25rem 1rem 1rem}
+.branch-body.open{display:block}
+.branch-desc{font-size:12px;color:var(--txt2);background:var(--bg);border-radius:var(--r4);padding:.5rem .75rem;margin-bottom:.75rem;line-height:1.55;border-left:3px solid var(--border2)}
+
+/* ── Report ────────────────────────────── */
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:1.25rem}
+@media(max-width:400px){.metrics{grid-template-columns:repeat(2,1fr)}}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:var(--r8);padding:.85rem;text-align:center}
+.metric-val{font-size:26px;font-weight:700;line-height:1}
+.metric-lbl{font-size:11px;color:var(--txt3);margin-top:4px}
+.m-ok .metric-val{color:var(--ok)}.m-p .metric-val{color:var(--warn)}.m-f .metric-val{color:var(--err)}.m-na .metric-val{color:var(--na)}
+.report-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r12);padding:1rem 1.25rem;margin-bottom:.75rem}
+.report-title{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:.75rem}
+.irritant-list{list-style:none}
+.irr-item{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;align-items:flex-start;line-height:1.5}
+.irr-item:last-child{border-bottom:none}
+.irr-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;white-space:nowrap;margin-top:2px;flex-shrink:0}
+.irr-f{background:var(--err-bg);color:var(--err)}.irr-p{background:var(--warn-bg);color:var(--warn)}
+.prio-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+@media(max-width:480px){.prio-grid{grid-template-columns:1fr}}
+.prio-lbl{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--txt3);margin-bottom:4px}
+.empty{text-align:center;padding:1.5rem;color:var(--txt3);font-size:13px}
+
+/* ── Buttons ───────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--border2);border-radius:var(--r8);padding:.45rem .9rem;font-size:13px;cursor:pointer;font-family:inherit;color:var(--txt2);font-weight:500;transition:all .15s}
+.btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+.btn-navy{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn-navy:hover{background:var(--navy-light);border-color:var(--navy-light)}
+
+/* ── Instruction banner ────────────────── */
+.instructions{background:var(--navy-pale);border:1px solid #B5C9EF;border-radius:var(--r8);padding:.75rem 1rem;font-size:12px;color:var(--navy);line-height:1.6;margin-bottom:1.25rem}
+.instructions strong{font-weight:600}
+
+/* ── Print ─────────────────────────────── */
+@media print{
+  .tabs,.btn-row,.status-row,.obs{display:none}
+  .pane{display:block!important}
+  .step.status-ok::before{content:'✓ ';color:var(--ok)}
+  .step.status-fail::before{content:'✗ ';color:var(--err)}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="badge"><span class="badge-dot"></span>GNUT 06 · Handi-3D</div>
+      <h1>Cahier de tests <span>UX inclusif</span></h1>
+      <div class="subtitle">Protocole expérientiel · Animateurs (A) &amp; Témoins TIH (T) &amp; Entreprises (E)</div>
+    </div>
+    <div class="header-meta">
+      <div class="meta-field"><label>Date</label><input class="meta-input" type="date" id="session-date"></div>
+      <div class="meta-field"><label>Testeur</label><input class="meta-input" type="text" placeholder="Prénom Nom" id="session-tester"></div>
+      <div class="meta-field"><label>Appareil</label><input class="meta-input" type="text" placeholder="Quest 3s / PC / …" id="session-device"></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(0)">① Réunion TIH ↔ Entreprise</button>
+    <button class="tab" onclick="switchTab(1)">② Consulter l'annuaire</button>
+    <button class="tab" onclick="switchTab(2)">Rapport de session</button>
+  </div>
+
+  <!-- PANE 0 -->
+  <div id="pane-0" class="pane">
+    <div class="instructions">
+      <strong>Déroulement :</strong> pour chaque étape, faire répondre d'abord l'<strong>Animateur (A)</strong>, puis le <strong>TIH (T)</strong>, puis l'<strong>Entreprise (E)</strong> — confronter la vision "service" et la vision "usage". Marquer le résultat et noter les observations avant de passer à l'étape suivante.
+    </div>
+    <div class="ctx">
+      <div class="ctx-lbl">Contexte du scénario</div>
+      <div class="ctx-txt">Un TIH propose ses services à une entreprise cliente. Les deux se retrouvent dans le métavers Handi-3D pour une réunion de travail : présentation de profil, négociation, co-édition de documents, planification des suites.</div>
+      <div class="roles">
+        <span class="role role-a">A — Animateur salle immersive</span>
+        <span class="role role-t">T — TIH (travailleur indépendant handicapé)</span>
+        <span class="role role-e">E — Représentant de l'entreprise cliente</span>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="prog-0" style="width:0%"></div></div>
+      <div class="progress-lbl" id="prog-0-lbl">0 étape testée sur 9</div>
+    </div>
+    <div class="sec-title">Tronc commun — script de base</div>
+    <div id="steps-0"></div>
+    <div class="sec-title">Branches — déclinaisons par type de handicap</div>
+    <div id="branches-0"></div>
+  </div>
+
+  <!-- PANE 1 -->
+  <div id="pane-1" class="pane" style="display:none">
+    <div class="instructions">
+      <strong>Déroulement :</strong> une entreprise navigue dans l'espace "Sourcing inclusif" du métavers. L'<strong>Animateur (A)</strong> vérifie les fonctionnalités côté plateforme, l'<strong>Entreprise (E)</strong> explore et prend contact, le <strong>TIH (T)</strong> vérifie ce que représente son profil.
+    </div>
+    <div class="ctx">
+      <div class="ctx-lbl">Contexte du scénario</div>
+      <div class="ctx-txt">Une entreprise recherche un prestataire TIH via l'annuaire Handi-3D. Elle filtre, consulte des profils, prend contact, programme une réunion. Le TIH vérifie de son côté que son profil est valorisant et que ses données sont protégées.</div>
+      <div class="roles">
+        <span class="role role-a">A — Animateur guichet unique</span>
+        <span class="role role-e">E — Chargé RH / achats de l'entreprise</span>
+        <span class="role role-t">T — TIH dont le profil est consulté</span>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="prog-1" style="width:0%"></div></div>
+      <div class="progress-lbl" id="prog-1-lbl">0 étape testée sur 8</div>
+    </div>
+    <div class="sec-title">Tronc commun — script de base</div>
+    <div id="steps-1"></div>
+    <div class="sec-title">Branches — déclinaisons par type de handicap</div>
+    <div id="branches-1"></div>
+  </div>
+
+  <!-- PANE 2 : RAPPORT -->
+  <div id="pane-2" class="pane" style="display:none">
+    <div class="metrics" id="report-metrics">
+      <div class="metric m-ok"><div class="metric-val" id="cnt-ok">—</div><div class="metric-lbl">Réussis</div></div>
+      <div class="metric m-p"><div class="metric-val" id="cnt-p">—</div><div class="metric-lbl">Partiels</div></div>
+      <div class="metric m-f"><div class="metric-val" id="cnt-f">—</div><div class="metric-lbl">Irritants</div></div>
+      <div class="metric m-na"><div class="metric-val" id="cnt-na">—</div><div class="metric-lbl">Non testés</div></div>
+    </div>
+    <div class="report-card">
+      <div class="report-title">Irritants &amp; points de friction détectés</div>
+      <ul class="irritant-list" id="irritant-list"><li class="empty">Aucun résultat enregistré pour l'instant.</li></ul>
+    </div>
+    <div class="report-card">
+      <div class="report-title">Priorisation (votes à compléter en debrief)</div>
+      <div class="prio-grid">
+        <div><div class="prio-lbl">Top 3 irritants</div><textarea class="obs" rows="4" style="width:100%" placeholder="1. &#10;2. &#10;3. "></textarea></div>
+        <div><div class="prio-lbl">Top 3 opportunités</div><textarea class="obs" rows="4" style="width:100%" placeholder="1. &#10;2. &#10;3. "></textarea></div>
+      </div>
+      <div class="prio-lbl">Actions suivantes</div>
+      <textarea class="obs" rows="3" style="width:100%" placeholder="Qui · Quoi · Quand"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-navy" onclick="exportTxt()">Exporter le rapport (.txt)</button>
+      <button class="btn" onclick="window.print()">Imprimer</button>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+const D={
+  s0:{
+    tronc:[
+      {id:'s0-1',lbl:'Connexion au métavers',
+       a:'Le point d\'entrée (URL/QR/casque) est-il unique et compréhensible ?',
+       t:'Je sais où cliquer pour entrer sans me perdre ?',
+       e:'J\'ai reçu un lien d\'invitation clair avec les prérequis ?'},
+      {id:'s0-2',lbl:'Réglages accessibilité au démarrage',
+       a:'Proposons-nous d\'emblée le choix des commandes et réglages de confort (locomotion, sous-titres, contraste) ?',
+       t:'Je peux choisir mes commandes et régler le confort avant d\'entrer pleinement ?',
+       e:'Les options de confort sont-elles disponibles aussi pour le participant entreprise ?'},
+      {id:'s0-3',lbl:'Accueil dans le hall',
+       a:'L\'animateur est-il notifié de l\'arrivée du TIH et de l\'entreprise ? Un script d\'accueil inclusif est-il prévu ?',
+       t:'Je reconnais l\'animateur ? Je suis guidé plutôt que laissé seul ?',
+       e:'Le hall est-il lisible, non anxiogène et accessible ?'},
+      {id:'s0-4',lbl:'Navigation vers la salle de réunion',
+       a:'Le chemin vers la salle est-il balisé (fil d\'Ariane, flèches au sol) ? Plusieurs locomotions disponibles ?',
+       t:'Je trouve la bonne salle sans me perdre ? Je peux téléporter sans nausée ?',
+       e:'Le chemin est-il court et intuitif pour un visiteur non habitué ?'},
+      {id:'s0-5',lbl:'Ouverture de l\'espace privé (zone bleue)',
+       a:'La création d\'un espace confidentiel est-elle accessible en 1 clic ? La confidentialité est-elle visible ?',
+       t:'Je me sens en espace privé avec le client ? La confidentialité est clairement signalée ?',
+       e:'Je comprends que l\'espace est privé et sécurisé ?'},
+      {id:'s0-6',lbl:'Partage d\'un document (portfolio / devis)',
+       a:'Le dépôt de fichier est-il accessible (alternative au glisser-déposer via clavier/voix) ?',
+       t:'Je peux partager mon document sans difficulté avec mon dispositif d\'assistance ?',
+       e:'Je lis le document en plein écran avec zoom/contraste suffisant ?'},
+      {id:'s0-7',lbl:'Conduite de la réunion',
+       a:'Sous-titres live, gestion de parole (main levée) et tableau blanc co-éditable fonctionnent-ils correctement ?',
+       t:'Je peux prendre la parole facilement ? Le rythme d\'information est gérable ?',
+       e:'Je comprends bien mon interlocuteur ? Les outils de collaboration sont-ils fluides ?'},
+      {id:'s0-8',lbl:'Conclusion et épinglage des actions',
+       a:'Un résumé peut-il être généré ? Les décisions peuvent-elles être épinglées / exportées ?',
+       t:'Je peux fixer les prochaines étapes et recevoir un récap par mail ou fichier ?',
+       e:'J\'ai bien noté les actions qui me concernent avant de partir ?'},
+      {id:'s0-9',lbl:'Sortie propre du métavers',
+       a:'La déconnexion est-elle propre (sauvegarde, check bien-être, effacement sur appareil partagé) ?',
+       t:'Ai-je bien sauvegardé mon travail ? Mes réglages d\'accessibilité sont-ils conservés ?',
+       e:'Je suis déconnecté de tous les services tiers ? Mes données sont protégées ?'}
+    ],
+    branches:[
+      {id:'b0-moteur',lbl:'Handicap moteur',color:'#185FA5',
+       desc:'Profils : fauteuil roulant, limitations membres supérieurs, fatigabilité. Points critiques : modes de commande alternatifs, suppression du drag-and-drop, pauses.',
+       steps:[
+         {id:'bm0-1',lbl:'Commandes alternatives disponibles',q:'Joystick adapté, eye-tracking, switch, commandes vocales sont-ils proposés dès l\'accueil ?'},
+         {id:'bm0-2',lbl:'Drag-and-drop remplacé',q:'Toutes les actions (dépôt de fichier, tableau blanc) ont-elles une alternative non-glisser (clavier, menu) ?'},
+         {id:'bm0-3',lbl:'Durée et pauses',q:'Des pauses sont-elles proposées automatiquement ? La session peut-elle être suspendue et reprise ?'},
+         {id:'bm0-4',lbl:'Navigation sans obstacles',q:'L\'espace est-il navigable sans obstacles bas ? La téléportation est-elle disponible et stable ?'}
+       ]},
+      {id:'b0-auditif',lbl:'Handicap auditif / sourd',color:'#0F6E56',
+       desc:'Profils : surdité totale ou partielle, sourd signeur LSF. Points critiques : sous-titres live, indicateurs visuels de parole, interprète/avatar LSF.',
+       steps:[
+         {id:'ba0-1',lbl:'Sous-titres live',q:'Les sous-titres en temps réel s\'affichent-ils correctement pour tous les participants ?'},
+         {id:'ba0-2',lbl:'Indicateurs visuels de parole',q:'Y a-t-il un indicateur visuel (animation avatar, lumière) quand quelqu\'un prend la parole ?'},
+         {id:'ba0-3',lbl:'Chat texte intégré',q:'Le chat texte est-il accessible pendant la réunion sans quitter l\'écran principal ?'},
+         {id:'ba0-4',lbl:'LSF / interprète',q:'Un espace ou avatar interprète LSF peut-il être intégré à la réunion à la demande ?'}
+       ]},
+      {id:'b0-visuel',lbl:'Handicap visuel / malvoyance',color:'#B5680A',
+       desc:'Profils : malvoyance, daltonisme, cécité partielle. Points critiques : contraste, taille des polices, compatibilité lecteur d\'écran, mode daltonisme.',
+       steps:[
+         {id:'bv0-1',lbl:'Contraste et taille des polices',q:'Textes, menus et icônes sont-ils suffisamment contrastés (WCAG AA) et agrandissables ?'},
+         {id:'bv0-2',lbl:'Compatibilité lecteur d\'écran',q:'Les éléments interactifs (boutons, documents) sont-ils correctement lus par les aides techniques ?'},
+         {id:'bv0-3',lbl:'Alternatives textuelles',q:'Les images et avatars ont-ils des descriptions audio ou alt-text exploitables ?'},
+         {id:'bv0-4',lbl:'Mode daltonisme',q:'Des filtres de couleurs ou palettes accessibles sont-ils disponibles dans les paramètres ?'}
+       ]},
+      {id:'b0-cognitif',lbl:'Handicap cognitif / DYS',color:'#2D8653',
+       desc:'Profils : troubles DYS, TDAH, TDA, autisme. Points critiques : charge cognitive, navigation prévisible, mode simplifié, confirmations visuelles.',
+       steps:[
+         {id:'bc0-1',lbl:'Mode basse complexité',q:'Un mode "simple" réduit-il les animations, les menus et les stimuli non essentiels ?'},
+         {id:'bc0-2',lbl:'Navigation linéaire et prévisible',q:'L\'ordre des étapes est-il clair ? Peut-on revenir en arrière sans se perdre ?'},
+         {id:'bc0-3',lbl:'Confirmations et feedback',q:'Chaque action déclenche-t-elle un retour visuel/sonore clair ? Les erreurs sont-elles récupérables facilement ?'},
+         {id:'bc0-4',lbl:'Timer visible',q:'Le temps restant et l\'agenda de réunion sont-ils visibles en permanence sans être intrusifs ?'}
+       ]},
+      {id:'b0-psychique',lbl:'Handicap psychique / invisible',color:'#993556',
+       desc:'Profils : anxiété, dépression, troubles psychiques, fatigue invisible. Points critiques : sortie rapide, contrôle de présence, mode basse stimulation.',
+       steps:[
+         {id:'bp0-1',lbl:'Sortie d\'urgence accessible',q:'Un bouton "quitter maintenant" est-il visible à tout moment sans confirmation longue ?'},
+         {id:'bp0-2',lbl:'Mode basse stimulation',q:'Sons, effets et mouvements peuvent-ils être désactivés globalement en 1 geste ?'},
+         {id:'bp0-3',lbl:'Contrôle de présence',q:'L\'utilisateur peut-il couper sa voix / caméra / avatar sans justification exigée ?'},
+         {id:'bp0-4',lbl:'Mot-signal de sécurité',q:'Un mot-signal pour stopper la session a-t-il été convenu ? L\'animateur peut-il agir discrètement ?'}
+       ]}
+    ]
+  },
+  s1:{
+    tronc:[
+      {id:'s1-1',lbl:'Connexion au métavers (côté entreprise)',
+       a:'L\'entreprise reçoit-elle un lien d\'invitation clair avec les prérequis (casque/navigateur/compte) ?',
+       t:'Mon profil dans l\'annuaire est-il visible et à jour avant même la visite de l\'entreprise ?',
+       e:'Je me connecte sans friction depuis mon poste de travail habituel (navigateur suffit) ?'},
+      {id:'s1-2',lbl:'Navigation vers le guichet unique / annuaire',
+       a:'La signalétique vers l\'espace "Sourcing inclusif" est-elle visible dès le hall d\'accueil ?',
+       t:'Mon statut de disponibilité s\'affiche-t-il correctement pour les visiteurs entreprise ?',
+       e:'Je trouve le guichet sans aide particulière ni effort de mémorisation ?'},
+      {id:'s1-3',lbl:'Accès à l\'annuaire des TIH',
+       a:'L\'annuaire est-il accessible au clavier, au lecteur d\'écran et chargé rapidement ?',
+       t:'Mon profil s\'affiche-t-il correctement avec les bonnes informations et compétences ?',
+       e:'Je vois clairement les profils disponibles sans surcharge d\'information ?'},
+      {id:'s1-4',lbl:'Filtres de recherche',
+       a:'Les filtres (compétences, disponibilité, mission, lieu) fonctionnent-ils sans friction et sont-ils accessibles ?',
+       t:'Les filtres par compétences reflètent-ils fidèlement mon profil réel ?',
+       e:'Je peux filtrer les profils sans formulation maladroite ou discriminante ?'},
+      {id:'s1-5',lbl:'Consultation d\'un profil TIH',
+       a:'La page profil est-elle accessible (contraste, taille de police, lecteur d\'écran) ?',
+       t:'Mon profil est-il lisible, complet et valorisant ? Je contrôle ce qui est visible ?',
+       e:'J\'accède facilement aux informations essentielles (compétences, portfolio, tarif, disponibilité) ?'},
+      {id:'s1-6',lbl:'Prise de contact',
+       a:'L\'envoi d\'un message ou d\'une invitation est-il accessible (voix/texte) et ne nécessite pas de drag ?',
+       t:'Je reçois une notification claire de demande de contact ? Je peux accepter ou refuser facilement ?',
+       e:'Le message que j\'envoie est-il professionnel et adapté au contexte de la plateforme ?'},
+      {id:'s1-7',lbl:'Programmation d\'une réunion',
+       a:'La création d\'un RDV depuis l\'annuaire génère-t-elle automatiquement un lien d\'invitation ?',
+       t:'Je reçois l\'invitation dans un format compatible avec mes outils habituels (calendrier, mail) ?',
+       e:'La planification est-elle fluide depuis le profil vers mon agenda professionnel ?'},
+      {id:'s1-8',lbl:'Sortie et suivi',
+       a:'Les actions (contact envoyé, RDV planifié) sont-elles récapitulées avant la déconnexion ?',
+       t:'Je suis notifié des prochaines étapes depuis mon espace de profil ?',
+       e:'Je dispose d\'un récap (candidats consultés, messages envoyés) à ma déconnexion ?'}
+    ],
+    branches:[
+      {id:'b1-moteur',lbl:'Handicap moteur — côté entreprise',color:'#185FA5',
+       desc:'L\'utilisateur côté entreprise peut lui-même être en situation de handicap moteur. Points clés : navigation annuaire au clavier, filtres, formulaire de contact sans drag.',
+       steps:[
+         {id:'bm1-1',lbl:'Filtres accessibles au clavier',q:'Tous les filtres de l\'annuaire sont-ils utilisables sans souris ?'},
+         {id:'bm1-2',lbl:'Pagination et défilement',q:'La liste des profils peut-elle être parcourue au clavier ou par commandes vocales ?'},
+         {id:'bm1-3',lbl:'Formulaire de contact',q:'L\'envoi d\'un message de contact est-il possible sans drag-and-drop ni geste complexe ?'}
+       ]},
+      {id:'b1-auditif',lbl:'Handicap auditif — vidéos et notifications',color:'#0F6E56',
+       desc:'Vidéos de présentation des TIH dans l\'annuaire : sous-titres disponibles ? Alternatives textuelles aux contenus audio ?',
+       steps:[
+         {id:'ba1-1',lbl:'Vidéos de présentation sous-titrées',q:'Les vidéos de présentation des TIH dans l\'annuaire sont-elles sous-titrées automatiquement ?'},
+         {id:'ba1-2',lbl:'Alternative texte aux voix off',q:'Les descriptions audio de profil ont-elles un équivalent texte intégral ?'},
+         {id:'ba1-3',lbl:'Confirmations visuelles',q:'Les confirmations d\'envoi de message sont-elles visuelles (pas uniquement sonores) ?'}
+       ]},
+      {id:'b1-visuel',lbl:'Handicap visuel — lecture de profils',color:'#B5680A',
+       desc:'Lecture des profils TIH avec malvoyance. Points : structure lisible, alt-text des photos, zoom, navigation audio.',
+       steps:[
+         {id:'bv1-1',lbl:'Profil lisible à x200%',q:'La page profil reste-t-elle lisible et utilisable avec un agrandissement x200% ?'},
+         {id:'bv1-2',lbl:'Photos avec alt-text',q:'Les photos de profil ont-elles une description alternative pertinente ?'},
+         {id:'bv1-3',lbl:'Mode liste disponible',q:'Un affichage "liste" (plus simple que la grille) est-il disponible pour l\'annuaire ?'}
+       ]},
+      {id:'b1-cognitif',lbl:'Handicap cognitif — lisibilité des profils',color:'#2D8653',
+       desc:'Charge cognitive à la lecture des profils : trop d\'information ? Navigation entre profils sans se perdre ?',
+       steps:[
+         {id:'bc1-1',lbl:'Profils avec version courte',q:'Chaque profil propose-t-il une vue synthétique (3-4 infos clés) avant le détail complet ?'},
+         {id:'bc1-2',lbl:'Fil de navigation clair',q:'L\'utilisateur sait-il toujours où il se trouve (profil #X / retour à la liste) ?'},
+         {id:'bc1-3',lbl:'Favoris et comparaison',q:'Peut-on marquer des profils "favoris" pour les comparer sans devoir les mémoriser ?'}
+       ]},
+      {id:'b1-psychique',lbl:'Handicap psychique — confort de la démarche TIH',color:'#993556',
+       desc:'Anxiété de la démarche pour un TIH : confidentialité du profil, contrôle de la visibilité, droit de refus.',
+       steps:[
+         {id:'bp1-1',lbl:'Contrôle de visibilité du profil',q:'Le TIH peut-il rendre son profil invisible temporairement ou anonymiser certains éléments ?'},
+         {id:'bp1-2',lbl:'Transparence sur les consultations',q:'Le TIH peut-il savoir qui a consulté son profil — ou désactiver cet historique ?'},
+         {id:'bp1-3',lbl:'Droit de refus simple',q:'Refuser une demande de contact est-il possible en 1 clic, sans justification exigée ?'}
+       ]}
+    ]
+  }
+};
+
+const ST={};
+// initialise state
+[D.s0,D.s1].forEach(sc=>{
+  [...sc.tronc,...sc.branches.flatMap(b=>b.steps)].forEach(s=>ST[s.id]={status:'',obs:''});
+});
+
+function buildSteps(cid,steps){
+  const el=document.getElementById(cid);
+  el.innerHTML='';
+  steps.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='step';d.id='step-'+s.id;
+    d.innerHTML=`<div class="step-row">
+      <div class="step-num">${i+1}</div>
+      <div class="step-body">
+        <div class="step-label">${s.lbl}</div>
+        <div class="qs">
+          ${s.a?`<div class="q-block"><div class="q-who a">A — animateur</div>${s.a}</div>`:''}
+          ${s.t?`<div class="q-block"><div class="q-who t">T — TIH</div>${s.t}</div>`:''}
+          ${s.e?`<div class="q-block"><div class="q-who e">E — entreprise</div>${s.e}</div>`:''}
+          ${s.q?`<div class="q-block q-full"><div class="q-who v">Point de vérification</div>${s.q}</div>`:''}
+        </div>
+        <div class="status-row">
+          <span class="st-lbl">Résultat :</span>
+          <button class="st" data-id="${s.id}" data-v="ok" onclick="setSt(this)">✓ réussi</button>
+          <button class="st" data-id="${s.id}" data-v="partial" onclick="setSt(this)">~ partiel</button>
+          <button class="st" data-id="${s.id}" data-v="fail" onclick="setSt(this)">✗ irritant</button>
+          <button class="st" data-id="${s.id}" data-v="na" onclick="setSt(this)">— non testé</button>
+        </div>
+        <textarea class="obs" placeholder="Observations, citations, captures…" rows="1"
+          oninput="ST['${s.id}'].obs=this.value"></textarea>
+      </div></div>`;
+    el.appendChild(d);
+  });
+}
+
+function buildBranches(cid,branches){
+  const el=document.getElementById(cid);
+  el.innerHTML='';
+  branches.forEach(b=>{
+    const cnt=b.steps.length;
+    const acc=document.createElement('div');
+    acc.className='branch';
+    acc.innerHTML=`<div class="branch-hdr" onclick="toggleB('bb-${b.id}',this)">
+      <span class="branch-dot" style="background:${b.color}"></span>
+      <span class="branch-name">${b.lbl}</span>
+      <span class="branch-count">${cnt} étape${cnt>1?'s':''}</span>
+      <span class="branch-arrow">▾</span></div>
+      <div class="branch-body" id="bb-${b.id}">
+        <div class="branch-desc">${b.desc}</div>
+        <div id="bstep-${b.id}"></div>
+      </div>`;
+    el.appendChild(acc);
+    buildSteps('bstep-'+b.id,b.steps);
+  });
+}
+
+function toggleB(id,hdr){
+  const body=document.getElementById(id);
+  const o=body.classList.toggle('open');
+  hdr.classList.toggle('open',o);
+}
+
+function setSt(btn){
+  const id=btn.dataset.id,v=btn.dataset.v;
+  ST[id].status=ST[id].status===v?'':v;
+  const row=btn.closest('.status-row');
+  row.querySelectorAll('.st').forEach(b=>{
+    b.className='st';
+    if(b.dataset.v===ST[id].status){
+      if(ST[id].status==='ok')b.className='st sel-ok';
+      else if(ST[id].status==='partial')b.className='st sel-partial';
+      else if(ST[id].status==='fail')b.className='st sel-fail';
+      else if(ST[id].status==='na')b.className='st sel-na';
+    }
+  });
+  // update card border
+  const card=document.getElementById('step-'+id);
+  if(card){card.className='step'+(ST[id].status?' status-'+ST[id].status:'');}
+  updateProgress();
+}
+
+function updateProgress(){
+  [D.s0,D.s1].forEach((sc,si)=>{
+    const tot=sc.tronc.length;
+    const done=sc.tronc.filter(s=>ST[s.id].status&&ST[s.id].status!=='na').length;
+    const pct=Math.round(done/tot*100);
+    document.getElementById('prog-'+si).style.width=pct+'%';
+    document.getElementById('prog-'+si+'-lbl').textContent=done+' étape'+(done!==1?'s':'')+' testée'+(done!==1?'s':'')+' sur '+tot+' (tronc commun)';
+  });
+}
+
+function switchTab(i){
+  [0,1,2].forEach(j=>{
+    document.getElementById('pane-'+j).style.display=j===i?'':'none';
+    document.querySelectorAll('.tab')[j].classList.toggle('active',j===i);
+  });
+  if(i===2)buildReport();
+}
+
+function allSteps(){
+  return [...D.s0.tronc,...D.s0.branches.flatMap(b=>b.steps),
+          ...D.s1.tronc,...D.s1.branches.flatMap(b=>b.steps)];
+}
+
+function buildReport(){
+  const all=allSteps();
+  const tested=all.filter(s=>ST[s.id].status);
+  const ok=tested.filter(s=>ST[s.id].status==='ok').length;
+  const p=tested.filter(s=>ST[s.id].status==='partial').length;
+  const f=tested.filter(s=>ST[s.id].status==='fail').length;
+  const na=tested.filter(s=>ST[s.id].status==='na').length;
+  document.getElementById('cnt-ok').textContent=ok;
+  document.getElementById('cnt-p').textContent=p;
+  document.getElementById('cnt-f').textContent=f;
+  document.getElementById('cnt-na').textContent=na;
+  const friction=all.filter(s=>ST[s.id].status==='fail'||ST[s.id].status==='partial');
+  const ul=document.getElementById('irritant-list');
+  if(!friction.length){ul.innerHTML='<li class="empty">Aucun irritant enregistré pour l\'instant.</li>';return;}
+  ul.innerHTML=friction.map(s=>`<li class="irr-item">
+    <span class="irr-badge ${ST[s.id].status==='fail'?'irr-f':'irr-p'}">${ST[s.id].status==='fail'?'irritant':'partiel'}</span>
+    <span><strong>${s.lbl}</strong>${ST[s.id].obs?' — '+ST[s.id].obs:''}</span>
+    </li>`).join('');
+}
+
+function exportTxt(){
+  const date=document.getElementById('session-date').value||'(date non renseignée)';
+  const tester=document.getElementById('session-tester').value||'(testeur non renseigné)';
+  const device=document.getElementById('session-device').value||'(appareil non renseigné)';
+  const lines=[
+    '===================================',
+    'RAPPORT HANDI-3D — CAHIER DE TESTS',
+    '===================================',
+    'Date : '+date,
+    'Testeur : '+tester,
+    'Appareil : '+device,
+    '',
+    '--- SCÉNARIO 1 : Réunion TIH ↔ Entreprise ---'
+  ];
+  [...D.s0.tronc,...D.s0.branches.flatMap(b=>b.steps)].forEach(s=>{
+    const st=ST[s.id];
+    if(st.status)lines.push('['+st.status.toUpperCase()+'] '+s.lbl+(st.obs?' | '+st.obs:''));
+  });
+  lines.push('','--- SCÉNARIO 2 : Consulter l\'annuaire ---');
+  [...D.s1.tronc,...D.s1.branches.flatMap(b=>b.steps)].forEach(s=>{
+    const st=ST[s.id];
+    if(st.status)lines.push('['+st.status.toUpperCase()+'] '+s.lbl+(st.obs?' | '+st.obs:''));
+  });
+  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='rapport_handi3d_'+date.replace(/-/g,'')+'.txt';
+  a.click();
+}
+
+// Init
+buildSteps('steps-0',D.s0.tronc);
+buildSteps('steps-1',D.s1.tronc);
+buildBranches('branches-0',D.s0.branches);
+buildBranches('branches-1',D.s1.branches);
+
+// Default date = today
+document.getElementById('session-date').value=new Date().toISOString().slice(0,10);
+</script>
+</body>
+</html>
